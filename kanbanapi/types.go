@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 )
 
 type App struct {
@@ -19,18 +18,6 @@ type RouteResponse struct {
 type LoginCredentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-}
-
-func (lc *LoginCredentials) Validate() error {
-	if lc.Username == "" {
-		return errors.New("Username is required")
-	}
-
-	if lc.Password == "" {
-		return errors.New("Password is required.")
-	}
-
-	return nil
 }
 
 type UserResponse struct {

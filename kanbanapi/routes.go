@@ -15,7 +15,6 @@ func rootRoute(w http.ResponseWriter, r *http.Request) {
 
 // Register User function to handle user registraion API request
 func (app *App) register(w http.ResponseWriter, r *http.Request) {
-
 	// json decode the credentials
 	// from the request body
 	var loginCreds LoginCredentials
@@ -49,14 +48,12 @@ func (app *App) register(w http.ResponseWriter, r *http.Request) {
 func login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Login Endpoint hit! Nice!"})
-
 }
 
 // Create Project
 func createProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Create Projects Endpoint hit! Nice!"})
-
 }
 
 // Update Project by ID
@@ -68,7 +65,6 @@ func updateProject(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Update Projects Endpoint hit! Nice!", ID: id})
-
 }
 
 // Get Project by ID
@@ -80,14 +76,12 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Get Project by ID Endpoint hit! Nice!", ID: id})
-
 }
 
 // Get all Projects
 func getProjects(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Get ALL Projects Endpoint hit! Nice!"})
-
 }
 
 // Delete Project by ID
@@ -99,5 +93,4 @@ func deleteProject(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Delete Projects Endpoint hit! Nice!", ID: id})
-
 }
