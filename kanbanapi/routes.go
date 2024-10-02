@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func rootRoute(w http.ResponseWriter, r *http.Request) {
@@ -12,11 +13,36 @@ func rootRoute(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(RouteResponse{Message: "API Live! Nice!"})
 }
 
-// Register User
-func register(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(RouteResponse{Message: "Register Endpoint hit! Nice!"})
+// Register User function to handle user registraion API request
+func (app *App) register(w http.ResponseWriter, r *http.Request) {
 
+	// json decode the credentials
+	// from the request body
+	var loginCreds LoginCredentials
+	err := json.NewDecoder(r.Body).Decode(&loginCreds)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload.")
+		return
+	}
+
+	// validate the credentials
+	if err := loginCreds.Validate(); err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// hash user password
+	// with bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(loginCreds.Password), bcrypt.DefaultCost)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Internal Server Error!")
+		return
+	}
+	var returnedXataID string
+	err = app.DB.QueryRow(`INSERT INTO "users" (username,password) VALUES($1,$2) RETURNING xata_id`, loginCreds.Username, string(hashedPassword)).Scan(&returnedXataID)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(RouteResponse{Message: " >> Register Endpoint hit! Nice!"})
 }
 
 // Login user
