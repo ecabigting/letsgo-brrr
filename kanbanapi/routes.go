@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -14,6 +15,7 @@ func rootRoute(w http.ResponseWriter, r *http.Request) {
 }
 
 // Register User function to handle user registraion API request
+// and set it as function receiver for the App struct
 func (app *App) register(w http.ResponseWriter, r *http.Request) {
 	// json decode the credentials
 	// from the request body
@@ -37,17 +39,87 @@ func (app *App) register(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Internal Server Error!")
 		return
 	}
+
+	// insert the records to user table
+	// and set the returning XataID to
+	// returnedXataID, then check
+	// if we encounter an error
 	var returnedXataID string
 	err = app.DB.QueryRow(`INSERT INTO "users" (username,password) VALUES($1,$2) RETURNING xata_id`, loginCreds.Username, string(hashedPassword)).Scan(&returnedXataID)
+	if err != nil {
+		respondWithError(w, http.StatusBadGateway, err.Error()+"\nError Creating User")
+		return
+	}
+
+	// generate a JWT token
+	tokenString, err := app.generateToken(loginCreds.Username, returnedXataID)
+	// check if there was an
+	// error generating the jwt
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error generating access token"+err.Error())
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(RouteResponse{Message: " >> Register Endpoint hit! Nice!"})
+	json.NewEncoder(w).Encode(UserResponse{XataID: returnedXataID, Username: loginCreds.Username, Token: tokenString})
 }
 
 // Login user
-func login(w http.ResponseWriter, r *http.Request) {
+func (app *App) login(w http.ResponseWriter, r *http.Request) {
+	// json decode the credentials
+	// from the request body
+	var loginCreds LoginCredentials
+	err := json.NewDecoder(r.Body).Decode(&loginCreds)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload.")
+		return
+	}
+
+	// validate the credentials
+	if err := loginCreds.Validate(); err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// check if user credentials
+	// exist in the database
+	var storedCreds LoginCredentials
+	var returnedXataID string
+	err = app.DB.QueryRow(`SELECT xata_id,username,password FROM "users" WHERE username=$1`, loginCreds.Username).Scan(&returnedXataID, &storedCreds.Username, &storedCreds.Password)
+	// check if we encounter
+	// any kind of errors
+	if err != nil {
+		// check if we found
+		// any rows for the username
+		if err == sql.ErrNoRows {
+			respondWithError(w, http.StatusUnauthorized, "Invalid username or password")
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, err.Error()+"\nError: Invalid request payload!")
+		return
+	}
+
+	// check if password match
+	// using bycrpt and converting
+	// the stored password and
+	// request password as byte slices
+	err = bcrypt.CompareHashAndPassword([]byte(storedCreds.Password), []byte(loginCreds.Password))
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Invalid username or password")
+		return
+	}
+
+	// generate a JWT token
+	tokenString, err := app.generateToken(loginCreds.Username, returnedXataID)
+	// check if there was an
+	// error generating the jwt
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error generating access token"+err.Error())
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(RouteResponse{Message: "Login Endpoint hit! Nice!"})
+	json.NewEncoder(w).Encode(UserResponse{XataID: returnedXataID, Username: loginCreds.Username, Token: tokenString})
 }
 
 // Create Project

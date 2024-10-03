@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-
 	// load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("..Error loading .env file.")
@@ -23,6 +22,11 @@ func main() {
 	connStr := os.Getenv("XATA_PSQL_URL")
 	if len(connStr) == 0 {
 		log.Fatalf("..XATA_PSQL_URL not set")
+	}
+
+	tokenKey := os.Getenv("JWT_TOKEN_SECRET")
+	if len(tokenKey) == 0 {
+		log.Fatalf("..JWT_TOKEN_SECRET not set")
 	}
 
 	// open database connection
@@ -37,7 +41,7 @@ func main() {
 
 	// adding the db connection
 	// as an app state
-	app := &App{DB: DB}
+	app := &App{DB: DB, TokenKey: []byte(tokenKey)}
 
 	log.Println("Starting server..")
 	// defining router for http request
@@ -48,7 +52,7 @@ func main() {
 	// check the `loggingMiddleware` function
 	router.Handle("/", alice.New(loggingMiddleware).ThenFunc(rootRoute)).Methods("GET")
 	router.Handle("/register", alice.New(loggingMiddleware).ThenFunc(app.register)).Methods("POST")
-	router.Handle("/login", alice.New(loggingMiddleware).ThenFunc(login)).Methods("POST")
+	router.Handle("/login", alice.New(loggingMiddleware).ThenFunc(app.login)).Methods("POST")
 	router.Handle("/projects", alice.New(loggingMiddleware).ThenFunc(createProject)).Methods("POST")
 	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(updateProject)).Methods("PUT")
 	router.Handle("/projects", alice.New(loggingMiddleware).ThenFunc(getProjects)).Methods("GET")
