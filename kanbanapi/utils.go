@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -49,4 +50,15 @@ func (app *App) generateToken(uname, id string) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+// schema loader
+// load the json schema
+// from file
+func loadSchemaFromFile(filePath string) (string, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }

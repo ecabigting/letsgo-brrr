@@ -35,6 +35,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// load schemas from file paths
+	userSchema, err := loadSchemaFromFile("schemas/user.json")
+	if err != nil {
+		log.Fatalf("..Error loading user schema from file: %v", err)
+	}
+	projectSchema, err := loadSchemaFromFile("schemas/project.json")
+	if err != nil {
+		log.Fatalf("..Error loading user schema from file: %v", err)
+	}
 	// close the db connection
 	// on program close
 	defer DB.Close()
@@ -51,13 +60,21 @@ func main() {
 	// adding alice as middleware handler for all request
 	// check the `loggingMiddleware` function
 	router.Handle("/", alice.New(loggingMiddleware).ThenFunc(rootRoute)).Methods("GET")
-	router.Handle("/register", alice.New(loggingMiddleware).ThenFunc(app.register)).Methods("POST")
-	router.Handle("/login", alice.New(loggingMiddleware).ThenFunc(app.login)).Methods("POST")
-	router.Handle("/projects", alice.New(loggingMiddleware).ThenFunc(createProject)).Methods("POST")
-	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(updateProject)).Methods("PUT")
-	router.Handle("/projects", alice.New(loggingMiddleware).ThenFunc(getProjects)).Methods("GET")
-	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(getProject)).Methods("GET")
-	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(deleteProject)).Methods("DELETE")
+	// set the user schema validation
+	// for user endpoiunts using
+	// alice chaining middleware request
+	userChain := alice.New(loggingMiddleware, validationMiddleware(userSchema))
+	router.Handle("/register", userChain.ThenFunc(app.register)).Methods("POST")
+	router.Handle("/login", userChain.ThenFunc(app.login)).Methods("POST")
+	// set the project schema validation
+	// for project endpoiunts using
+	// alice chaining middleware request
+	projectChain := alice.New(loggingMiddleware, validationMiddleware(projectSchema))
+	router.Handle("/projects", projectChain.ThenFunc(createProject)).Methods("POST")
+	router.Handle("/projects/{id}", projectChain.ThenFunc(updateProject)).Methods("PUT")
+	router.Handle("/projects", projectChain.ThenFunc(getProjects)).Methods("GET")
+	router.Handle("/projects/{id}", projectChain.ThenFunc(getProject)).Methods("GET")
+	router.Handle("/projects/{id}", projectChain.ThenFunc(deleteProject)).Methods("DELETE")
 	// setup the http server
 	// log any errors that occurs
 	port := "6969"
