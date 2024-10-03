@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -123,9 +125,56 @@ func (app *App) login(w http.ResponseWriter, r *http.Request) {
 }
 
 // Create Project
-func createProject(w http.ResponseWriter, r *http.Request) {
+func (app *App) createProject(w http.ResponseWriter, r *http.Request) {
+	var project Project
+	// decode the project from
+	// the request body using json.NewDecoder
+	// and then pass it to the project variable
+	// above via &project pointer
+	err := json.NewDecoder(r.Body).Decode(&project)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+	}
+
+	// get the userID from
+	// claims via context
+	// r.Context() : reads the context from the request
+	// .Value("claims") : get the value with key "claims", see jwtMiddleware function
+	// .(*Claims) parse it into the Claims object
+	claims := r.Context().Value("claims").(*Claims)
+	userID := claims.ID
+	log.Println(claims)
+
+	// the insert query
+	// to add new Project into the
+	// project table in the DB
+	inserQuery := `
+        INSERT INTO projects ("user",name,repo_url,site_url,description,dependencies,dev_dependencies,status)
+                      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING xata_id
+  `
+	var xataID string
+	log.Println(userID)
+	err = app.DB.QueryRow(inserQuery,
+		userID,
+		project.Name,
+		project.RepoURL,
+		project.SiteURL,
+		project.Description,
+		pq.Array(project.Dependencies),
+		pq.Array(project.DevDependencies),
+		project.Status).Scan(&xataID)
+	// check if there was an error trying to
+	// add project into database
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error Creating new Project: "+err.Error())
+		return
+	}
+
+	project.XataID = xataID
+	project.UserID = userID
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(RouteResponse{Message: "Create Projects Endpoint hit! Nice!"})
+	json.NewEncoder(w).Encode(project)
 }
 
 // Update Project by ID
@@ -151,7 +200,7 @@ func getProject(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get all Projects
-func getProjects(w http.ResponseWriter, r *http.Request) {
+func (app *App) getProjects(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(RouteResponse{Message: "Get ALL Projects Endpoint hit! Nice!"})
 }

@@ -39,3 +39,15 @@ type Claims struct {
 	// adding the jwt Claims
 	jwt.RegisteredClaims
 }
+
+type Project struct {
+	XataID          string   `json:"xata_id,omitempty"`
+	UserID          string   `json:"user,omitempty"`
+	Name            string   `json:"name,omitempty"`
+	RepoURL         string   `json:"repo_url,omitempty"`
+	SiteURL         string   `json:"site_url,omitempty"`
+	Description     string   `json:"description,omitempty"`
+	Status          string   `json:"status,omitempty"`
+	Dependencies    []string `json:"dependencies,omitempty"`
+	DevDependencies []string `json:"dev_dependencies,omitempty"`
+}

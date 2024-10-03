@@ -29,7 +29,7 @@ func (app *App) jwtMiddleware(next http.Handler) http.Handler {
 			respondWithError(w, http.StatusUnauthorized, "Invalid Token")
 		}
 
-		tokenString := strings.TrimPrefix(authHeader, "Bearer")
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		claims := &Claims{}
 
 		// parse the jwt Token
@@ -44,7 +44,7 @@ func (app *App) jwtMiddleware(next http.Handler) http.Handler {
 				respondWithError(w, http.StatusUnauthorized, "Invalid Token signature")
 				return
 			}
-			respondWithError(w, http.StatusBadRequest, "Invalid Token \n"+err.Error())
+			respondWithError(w, http.StatusBadRequest, "Invalid Token")
 			return
 		}
 

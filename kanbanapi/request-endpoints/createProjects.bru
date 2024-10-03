@@ -6,6 +6,29 @@ meta {
 
 post {
   url: http://localhost:6969/projects
-  body: none
-  auth: none
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IjMyMWFzYnNYWFh2YXMyMnMiLCJpZCI6InJlY19jcnY5ZTg1cXJqNjY2Z2ppdTFoMCIsImV4cCI6MTcyNzk3MjE0N30.K7VF2aucd59y-OyYpdYFyYdSBlXJCca18tOkhXP3vQs
+}
+
+body:json {
+  {
+    "name":"Project Manhattan Hotdog",
+    "repo_url":"https://github.com/google/re2",
+    "site_url":"https://google.com/e2/home.html",
+    "dependencies":[
+      "scala",
+      "cplusplus",
+      "odin"
+    ],
+    "dev_dependencies":[
+      "money",
+      "time",
+      "energy"
+    ],
+    "status":"backlog"
+  }
 }
