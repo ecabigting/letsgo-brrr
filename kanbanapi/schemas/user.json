@@ -5,11 +5,11 @@
     "username": {
       "type": "string",
       "minLength": 4,
-      "maxLength": 50
+      "maxLength": 50,
+      "pattern": "^[a-zA-Z0-9]+$"
     },
     "password": {
       "type": "string",
-      "format": "password",
       "minLength": 8,
       "maxLength": 128
     }

@@ -92,7 +92,7 @@ func validationMiddleware(schema string) func(http.Handler) http.Handler {
 			// validate the body using the schema
 			result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 			if err != nil {
-				respondWithError(w, http.StatusInternalServerError, "Error validating payload as JSON")
+				respondWithError(w, http.StatusInternalServerError, "Error validating payload as JSON: "+err.Error())
 				return
 			}
 

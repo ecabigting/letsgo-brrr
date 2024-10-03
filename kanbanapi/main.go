@@ -69,12 +69,13 @@ func main() {
 	// set the project schema validation
 	// for project endpoiunts using
 	// alice chaining middleware request
-	projectChain := alice.New(loggingMiddleware, validationMiddleware(projectSchema))
+	projectChain := alice.New(loggingMiddleware, app.jwtMiddleware, validationMiddleware(projectSchema))
 	router.Handle("/projects", projectChain.ThenFunc(createProject)).Methods("POST")
 	router.Handle("/projects/{id}", projectChain.ThenFunc(updateProject)).Methods("PUT")
-	router.Handle("/projects", projectChain.ThenFunc(getProjects)).Methods("GET")
-	router.Handle("/projects/{id}", projectChain.ThenFunc(getProject)).Methods("GET")
-	router.Handle("/projects/{id}", projectChain.ThenFunc(deleteProject)).Methods("DELETE")
+
+	router.Handle("/projects", alice.New(loggingMiddleware).ThenFunc(getProjects)).Methods("GET")
+	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(getProject)).Methods("GET")
+	router.Handle("/projects/{id}", alice.New(loggingMiddleware).ThenFunc(deleteProject)).Methods("DELETE")
 	// setup the http server
 	// log any errors that occurs
 	port := "6969"
