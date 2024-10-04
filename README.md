@@ -2,7 +2,7 @@
 A collection of APIs, Microservice and Web Apps in general using Go
 
 ## 📝  kanbanapi
-A simple rest `api` with the [xata](https://xata.io/) a `postgresql` database
+A simple rest `api` with [xata](https://xata.io/) a `postgresql` database
 
 ### Installation 
 Clone this repo and `cd` into the project directory
@@ -24,4 +24,16 @@ Run the project with:
 go run ./
 ```
 Alternatively you can use `air` for hot reload module. You can install `air` by following these [instructions](https://github.com/air-verse/air?tab=readme-ov-file#installation)
+#### Available endpoints
+You can interact with the API using your favorite endpoints by using the following URLS:
 
+- `/` the root URL
+- `/register` a `POST` request to register a user and returns an access token
+- `/login` a `POST` to login a registered user and returns an access token
+- `/projects` a `GET` request returns all projects owned by the requesting user, required an access token in the `Authorization` header
+- `/projects/{xata_id}` a `GET` request that returns the project the of the given `xata_id`, project must be owned by the requesting user, required an access token in the `Authorization` header
+- `/projects/{xata_id}` a `PUT` request to update the project related to the given `xata_id`, required an access token in the `Authorization` header
+- `/projects` a `POST` request to create a new project, required an access token in the `Authorization` header
+at- `/projects/{xata_id}` a `DELETE` request to delete a project related to the given `xata_id`, required an access token in the `Authorization` header
+
+> Check the `/kanbanapi/request-endpoints` for the collection of request endpoints with body 
