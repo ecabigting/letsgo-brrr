@@ -72,14 +72,14 @@ func main() {
 	// that do not require any request body
 	projectChain := alice.New(loggingMiddleware, app.jwtMiddleware)
 	router.Handle("/projects", projectChain.ThenFunc(app.getProjects)).Methods("GET")
-	router.Handle("/projects/{id}", projectChain.ThenFunc(getProject)).Methods("GET")
-	router.Handle("/projects/{id}", projectChain.ThenFunc(deleteProject)).Methods("DELETE")
+	router.Handle("/projects/{xata_id}", projectChain.ThenFunc(app.getProject)).Methods("GET")
+	router.Handle("/projects/{xata_id}", projectChain.ThenFunc(app.deleteProject)).Methods("DELETE")
 	// using the previous chain of middleware
 	// create a new one and append the validationMiddleware
 	// for project endpoints that require request body
 	projectChainWithValidationMiddleware := projectChain.Append(validationMiddleware(projectSchema))
 	router.Handle("/projects", projectChainWithValidationMiddleware.ThenFunc(app.createProject)).Methods("POST")
-	router.Handle("/projects/{id}", projectChainWithValidationMiddleware.ThenFunc(updateProject)).Methods("PUT")
+	router.Handle("/projects/{xata_id}", projectChainWithValidationMiddleware.ThenFunc(app.updateProject)).Methods("PUT")
 
 	// setup the http server
 	// log any errors that occurs
