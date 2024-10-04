@@ -7,9 +7,37 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func setupRoutes(router *mux.Router, app *App, userSchema string, projectSchema string) {
+	// defining the endpoints
+	// adding alice as middleware handler for all request
+	// check the `loggingMiddleware` function
+	router.Handle("/", alice.New(loggingMiddleware).ThenFunc(rootRoute)).Methods("GET")
+	// set the user schema validation
+	// for user endpoiunts using
+	// alice chaining middleware request
+	userChain := alice.New(loggingMiddleware, validationMiddleware(userSchema))
+	router.Handle("/register", userChain.ThenFunc(app.register)).Methods("POST")
+	router.Handle("/login", userChain.ThenFunc(app.login)).Methods("POST")
+	// create a new middleware
+	// chain with loggingMiddleware
+	// and jwtMiddleware for project endpoints
+	// that do not require any request body
+	projectChain := alice.New(loggingMiddleware, app.jwtMiddleware)
+	router.Handle("/projects", projectChain.ThenFunc(app.getProjects)).Methods("GET")
+	router.Handle("/projects/{xata_id}", projectChain.ThenFunc(app.getProject)).Methods("GET")
+	router.Handle("/projects/{xata_id}", projectChain.ThenFunc(app.deleteProject)).Methods("DELETE")
+	// using the previous chain of middleware
+	// create a new one and append the validationMiddleware
+	// for project endpoints that require request body
+	projectChainWithValidationMiddleware := projectChain.Append(validationMiddleware(projectSchema))
+	router.Handle("/projects", projectChainWithValidationMiddleware.ThenFunc(app.createProject)).Methods("POST")
+	router.Handle("/projects/{xata_id}", projectChainWithValidationMiddleware.ThenFunc(app.updateProject)).Methods("PUT")
+}
 
 func rootRoute(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
