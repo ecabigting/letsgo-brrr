@@ -341,8 +341,16 @@ func (app *App) getProjects(w http.ResponseWriter, r *http.Request) {
 	// note of the function Query
 	// compared to what we use prev
 	// which is QueryRow(to executy)
-	strQry := `SELECT xata_id,"user",name,repo_url,site_url,description,dependencies,dev_dependencies,status
-            FROM projects WHERE "user"=$1`
+	strQry := `SELECT xata_id,
+  "user",
+  name,
+  repo_url,
+  site_url,
+  description,
+  dependencies,
+  dev_dependencies,
+  status
+  FROM projects WHERE "user"=$1`
 	rows, err := app.DB.Query(strQry, userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Error fetching project: DB.Query()")
@@ -357,14 +365,14 @@ func (app *App) getProjects(w http.ResponseWriter, r *http.Request) {
 		// scanning each field returned
 		// by the query, note the positions
 		// are important where you are setting them
-		err = rows.Scan(&project.XataID,
+		err := rows.Scan(&project.XataID,
 			&project.UserID,
 			&project.Name,
 			&project.RepoURL,
 			&project.SiteURL,
 			&project.Description,
-			pq.Array(dependencies),
-			pq.Array(dev_dependencies),
+			pq.Array(&dependencies),
+			pq.Array(&dev_dependencies),
 			&project.Status)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, "Error scanning project: rows.scan()")
@@ -393,7 +401,7 @@ func (app *App) deleteProject(w http.ResponseWriter, r *http.Request) {
 	// Read the parameters from the request 'r'
 	vars := mux.Vars(r)
 	// Get the value of id from the parameter
-	id := vars["id"]
+	id := vars["xata_id"]
 
 	// get the user id from the
 	// request context
@@ -411,7 +419,7 @@ func (app *App) deleteProject(w http.ResponseWriter, r *http.Request) {
 		// the project with the
 		// requested id
 		if err == sql.ErrNoRows {
-			respondWithError(w, http.StatusNotFound, "Project not found")
+			respondWithError(w, http.StatusNotFound, "Project not found: scannStoredID: "+id)
 			return
 		}
 		respondWithError(w, http.StatusInternalServerError, "Error fetching project DB.QueryRow():"+id)

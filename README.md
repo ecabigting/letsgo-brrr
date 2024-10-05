@@ -1,8 +1,34 @@
 # letsgo-brrr
 A collection of APIs, Microservice and Web Apps in general using Go
 
+
+## ℹ️  devicemonitor
+A web app build with `go`, `websockets`, and `htmx` to show realtime device info. 
+Info is read using the using the [gopsutil](https://github.com/shirou/gopsutil)
+
+[devicemonitor](/devicemonitor/src.png)
+
+### Installation 
+Clone this repo and `cd` into the project directory
+```zsh
+$ git clone https://github.com/ecabigting/letsgo-brrr.git
+$ cd kanbanapi
+```
+Run the app by executing
+```zsh
+$ go run ./cmd
+```
+
+Open a browser and visit the URL: `http://localhosts:<port>`
+
+
+> The UI is build with bootstrap
+
+
 ## 📝  kanbanapi
 A simple rest `api` with [xata](https://xata.io/) a `postgresql` database
+
+[kanbanapi](/kanbanapi/src.png)
 
 ### Installation 
 Clone this repo and `cd` into the project directory
@@ -37,3 +63,8 @@ You can interact with the API using your favorite endpoints by using the followi
 at- `/projects/{xata_id}` a `DELETE` request to delete a project related to the given `xata_id`, required an access token in the `Authorization` header
 
 > Check the `/kanbanapi/request-endpoints` for the collection of request endpoints with body 
+
+
+
+
+
