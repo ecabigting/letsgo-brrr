@@ -2,7 +2,7 @@
 A collection of APIs, Microservice and Web Apps in general using Go
 
 
-## ℹ️  devicemonitor
+## 💻devicemonitor
 A web app build with `go`, `websockets`, and `htmx` to show realtime device info. 
 Info is read using the using the [gopsutil](https://github.com/shirou/gopsutil)
 
