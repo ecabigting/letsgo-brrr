@@ -6,7 +6,7 @@ A collection of APIs, Microservice and Web Apps in general using Go
 A web app build with `go`, `websockets`, and `htmx` to show realtime device info. 
 Info is read using the using the [gopsutil](https://github.com/shirou/gopsutil)
 
-[devicemonitor](/devicemonitor/src.png)
+![devicemonitor](/devicemonitor/src.png)
 
 ### Installation 
 Clone this repo and `cd` into the project directory
@@ -28,7 +28,7 @@ Open a browser and visit the URL: `http://localhosts:<port>`
 ## 📝  kanbanapi
 A simple rest `api` with [xata](https://xata.io/) a `postgresql` database
 
-[kanbanapi](/kanbanapi/src.png)
+![kanbanapi](/kanbanapi/src.png)
 
 ### Installation 
 Clone this repo and `cd` into the project directory
