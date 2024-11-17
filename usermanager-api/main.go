@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/config"
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/routes"
@@ -15,17 +16,18 @@ import (
 func main() {
 	// load configuration
 	config.LoadConfig()
-	fmt.Println("Config loaded..")
+	fmt.Println("Config loaded...")
 	// init logger
 	utils.InitLogger()
-	fmt.Println("Logger Loaded..")
+	fmt.Println("Logger Loaded...")
 	// connect to db
 	clientOptions := options.Client().ApplyURI(config.AppConfig.MongoURI)
-	fmt.Println("Loaded DB Client Options")
+	fmt.Println("Loaded DB Client Options...")
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		fmt.Println("Error connecting to DB..", err)
 		utils.Logger.Fatal("Failed to connect to MongoDB:", err)
+		os.Exit(1)
 	}
 	fmt.Println("DB Connection no error")
 	defer func() {
