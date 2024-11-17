@@ -3,11 +3,13 @@ package services
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/models"
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,7 +39,12 @@ func (s *UserService) CreateUser(user *models.User) error {
 
 func (s *UserService) VerifyUser(userID string, token string) error {
 	var user models.User
-	err := s.collection.FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
+	// Convert userID to primitive Objectid
+	objectId, errOId := primitive.ObjectIDFromHex(userID)
+	if errOId != nil {
+		log.Println("Invalid id")
+	}
+	err := s.collection.FindOne(context.Background(), bson.M{"_id": objectId}).Decode(&user)
 	if err != nil {
 		return err
 	}
@@ -45,8 +52,10 @@ func (s *UserService) VerifyUser(userID string, token string) error {
 		return errors.New("invalid verification token")
 	}
 	user.VerifiedDate = time.Now()
+	user.VerificationToken = ""
 	user.IsEnabled = true
-	_, err = s.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$set": user})
+
+	_, err = s.collection.UpdateOne(context.Background(), bson.M{"_id": objectId}, bson.M{"$set": user})
 	return err
 }
 

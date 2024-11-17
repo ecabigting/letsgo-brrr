@@ -1,6 +1,11 @@
 package config
 
-import "os"
+import (
+	"log"
+	"os"
+
+	"github.com/joho/godotenv"
+)
 
 type Config struct {
 	MongoURI  string
@@ -11,6 +16,10 @@ type Config struct {
 var AppConfig Config
 
 func LoadConfig() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error Loading .env file")
+	}
 	AppConfig = Config{
 		MongoURI:  getEnv("MONGO_URI", "///"),
 		JWTSecret: getEnv("JWTSecret", "///"),
@@ -26,7 +35,7 @@ func LoadConfig() {
 * */
 
 func getEnv(key, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
+	if value, exist := os.LookupEnv(key); exist {
 		return value
 	}
 	return fallback

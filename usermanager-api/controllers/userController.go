@@ -20,15 +20,16 @@ func NewUserController(service *services.UserService) *UserController {
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// Validate required fields
-	if user.FirstName == "" || user.LastName == "" || user.Email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "FirstName, LastName, and Email are required"})
-		return
+	// Check for role and auto set it
+	if user.Role == "" {
+		user.Role = "User"
 	}
+
+	// TODO : add validation for unique email
 
 	// Create user
 	err := uc.service.CreateUser(&user)
@@ -53,7 +54,6 @@ func (uc *UserController) VerifyUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
-
 	err := uc.service.VerifyUser(userID, request.Token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
