@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/models"
@@ -20,6 +21,8 @@ func NewUserController(service *services.UserService) *UserController {
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
+		log.Println(">>>>>>>  Request body is empty?::")
+		log.Println(user)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
