@@ -80,3 +80,16 @@ func (s *UserService) DeleteUser(userID string) error {
 	_, err := s.collection.DeleteOne(context.Background(), bson.M{"_id": userID})
 	return err
 }
+
+// Check if email address exist
+func (s *UserService) CheckIfEmailExist(email string) bool {
+	count, err := s.collection.CountDocuments(context.Background(), bson.M{"email": email})
+	if err != nil {
+		log.Println(err)
+	}
+
+	if count > 0 {
+		return true
+	}
+	return false
+}

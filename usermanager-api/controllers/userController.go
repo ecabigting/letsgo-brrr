@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/models"
@@ -21,8 +20,6 @@ func NewUserController(service *services.UserService) *UserController {
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		log.Println(">>>>>>>  Request body is empty?::")
-		log.Println(user)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -32,12 +29,17 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 		user.Role = "User"
 	}
 
-	// TODO : add validation for unique email
+	// Check if email exist
+	exist := uc.service.CheckIfEmailExist(user.Email)
+	if exist {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exist!"})
+		return
+	}
 
 	// Create user
 	err := uc.service.CreateUser(&user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user", "desc": err.Error()})
 		return
 	}
 

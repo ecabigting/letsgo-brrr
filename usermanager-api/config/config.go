@@ -22,7 +22,7 @@ func LoadConfig() {
 	}
 	AppConfig = Config{
 		MongoURI:  getEnv("MONGO_URI", "///"),
-		JWTSecret: getEnv("JWTSecret", "///"),
+		JWTSecret: getEnv("JWT_SECRET", "///"),
 		Port:      getEnv("PORT", "9090"),
 	}
 }
