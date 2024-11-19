@@ -15,15 +15,18 @@ import (
 )
 
 type UserService struct {
-	collection *mongo.Collection
+	userCollection       *mongo.Collection
+	userDeviceCollection *mongo.Collection
 }
 
 func NewUserService(db *mongo.Database) *UserService {
 	return &UserService{
-		collection: db.Collection("users"),
+		userCollection:       db.Collection("users"),
+		userDeviceCollection: db.Collection("userdevices"),
 	}
 }
 
+// Create New User
 func (s *UserService) CreateUser(user *models.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -33,23 +36,24 @@ func (s *UserService) CreateUser(user *models.User) error {
 	user.CreatedDate = time.Now()
 	user.VerificationToken, _ = utils.GenerateVerificationToken()
 
-	_, err = s.collection.InsertOne(context.Background(), user)
+	_, err = s.userCollection.InsertOne(context.Background(), user)
 	return err
 }
 
+// Verify User with verification Token
 func (s *UserService) VerifyUser(userID string, token string) error {
 	var user models.User
 	// Convert userID to primitive Objectid
 	objectId, errOId := primitive.ObjectIDFromHex(userID)
 	if errOId != nil {
-		log.Println("Invalid id")
+		return errors.New("Invalid ID:1")
 	}
-	err := s.collection.FindOne(context.Background(), bson.M{"_id": objectId}).Decode(&user)
+	err := s.userCollection.FindOne(context.Background(), bson.M{"_id": objectId}).Decode(&user)
 	if err != nil {
-		return err
+		return errors.New("Invalid ID:2")
 	}
 	if user.VerificationToken != token {
-		return errors.New("invalid verification token")
+		return errors.New("Invalid Verification Token")
 	}
 	user.VerifiedDate = time.Now()
 	user.VerificationToken = ""
@@ -59,14 +63,14 @@ func (s *UserService) VerifyUser(userID string, token string) error {
 	user.IsEnabled = true
 	user.IsEnabledByID = objectId
 
-	_, err = s.collection.UpdateOne(context.Background(), bson.M{"_id": objectId}, bson.M{"$set": user})
+	_, err = s.userCollection.UpdateOne(context.Background(), bson.M{"_id": objectId}, bson.M{"$set": user})
 	return err
 }
 
 // GetUser retrieves a user by ID
 func (s *UserService) GetUser(userID string) (*models.User, error) {
 	var user models.User
-	err := s.collection.FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
+	err := s.userCollection.FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
@@ -75,19 +79,19 @@ func (s *UserService) GetUser(userID string) (*models.User, error) {
 
 // UpdateUser updates user information
 func (s *UserService) UpdateUser(userID string, user *models.User) error {
-	_, err := s.collection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$set": user})
+	_, err := s.userCollection.UpdateOne(context.Background(), bson.M{"_id": userID}, bson.M{"$set": user})
 	return err
 }
 
 // DeleteUser deletes a user by ID
 func (s *UserService) DeleteUser(userID string) error {
-	_, err := s.collection.DeleteOne(context.Background(), bson.M{"_id": userID})
+	_, err := s.userCollection.DeleteOne(context.Background(), bson.M{"_id": userID})
 	return err
 }
 
 // Check if email address exist
 func (s *UserService) CheckIfEmailExist(email string) bool {
-	count, err := s.collection.CountDocuments(context.Background(), bson.M{"email": email})
+	count, err := s.userCollection.CountDocuments(context.Background(), bson.M{"email": email})
 	if err != nil {
 		log.Println(err)
 	}
@@ -96,4 +100,17 @@ func (s *UserService) CheckIfEmailExist(email string) bool {
 		return true
 	}
 	return false
+}
+
+// Get user by Email
+func (s *UserService) GetUserByEmail(login *models.Login) (*models.User, error) {
+	var user models.User
+
+	// Get the User with the associated email
+	err := s.userCollection.FindOne(context.Background(), bson.M{"email": login.Email}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

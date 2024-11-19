@@ -18,6 +18,9 @@ func NewUserController(service *services.UserService) *UserController {
 	return &UserController{service: service}
 }
 
+func (uc *UserController) Login(c *gin.Context) {
+}
+
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var user models.User
 	// Validate password complexity

@@ -27,3 +27,20 @@ type User struct {
 	FirstName         string             `bson:"firstName" json:"firstName" binding:"required"`
 	MiddleName        string             `bson:"middleName" json:"middleName"`
 }
+
+type Login struct {
+	Email    string `bson:"email" json:"email" binding:"required,email"`
+	Password string `bson:"password" json:"password" validate:"required"`
+	UserDevice
+}
+
+type UserDevice struct {
+	DeviceID    primitive.ObjectID `bson:"_id"`
+	UserID      primitive.ObjectID `bson:"userID"`
+	DeviceOS    string             `bson:"dos,omitempty" json:"dos"`
+	UserAgent   string             `bsong:"ua,omitempty" json:"ua"`
+	DeviceGenID string             `bson:"did,omitempty" json:"did"`
+	Browser     string             `bson:"brwsr,omitempty" json:"brwsr"`
+	DeviceIP    string             `bson:"dip,omitempty" json:"dip"`
+	CreatedDate time.Time          `bson:"createdDate"`
+}
