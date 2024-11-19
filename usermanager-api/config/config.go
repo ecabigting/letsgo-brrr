@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/models"
-	"github.com/ecabigting/letsgo-brrr/usermanager-api/services"
 	"github.com/jaswdr/faker/v2"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,13 +16,12 @@ import (
 )
 
 type Config struct {
-	ConfigService *services.ConfigService
-	Database      string
-	MongoURI      string
-	JWTSecret     string
-	Port          string
-	DefP          string
-	DefE          string
+	Database  string
+	MongoURI  string
+	JWTSecret string
+	Port      string
+	DefP      string
+	DefE      string
 }
 
 var AppConfig Config
@@ -73,7 +71,7 @@ func SeedDB(db *mongo.Database) error {
 		fmt.Println("Seeding Database...")
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(AppConfig.DefP), bcrypt.DefaultCost)
 		if err != nil {
-			return nil
+			return err
 		}
 		fake := faker.New()
 		adminUser := models.User{
@@ -84,18 +82,18 @@ func SeedDB(db *mongo.Database) error {
 			MiddleName:        fake.Person().NameMale(),
 			LastName:          fake.Person().LastName(),
 			Gender:            fake.Person().Gender(),
-			DateOfBirth:       fake.Person().Faker.Time().Time(time.Now().AddDate(-20, 0, 0)),
+			DateOfBirth:       fake.Person().Faker.Time().Time(time.Now().AddDate(-33, 0, 0)),
 			IsEnabled:         true,
 			IsEnabledByDate:   time.Now(),
 			VerificationToken: "",
 			VerifiedDate:      time.Now(),
 			CreatedDate:       time.Now(),
 		}
-		_, err = userCollection.InsertOne(context.Background(), adminUser)
+		returnVal, err := userCollection.InsertOne(context.Background(), adminUser)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Added new user: ", AppConfig.DefE)
+		fmt.Println("Added new admin user: ", returnVal)
 	}
 	return nil
 }
