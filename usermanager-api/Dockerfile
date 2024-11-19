@@ -23,9 +23,9 @@ RUN go mod download
 # WORKDIR /app
 
 # Expose the port
-# EXPOSE 8080
+EXPOSE 8080
 
-# ARG PORT=8080
+ARG PORT=8080
 
 # Start the application with air
-CMD ["air", "-c", ".air.toml","--port","$PORT"]
+CMD ["air"]

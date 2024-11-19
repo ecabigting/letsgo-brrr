@@ -7,6 +7,7 @@ import (
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/services"
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type UserController struct {
@@ -19,6 +20,15 @@ func NewUserController(service *services.UserService) *UserController {
 
 func (uc *UserController) CreateUser(c *gin.Context) {
 	var user models.User
+	// Validate password complexity
+	validate := validator.New()
+	err := validate.RegisterValidation("password_complexity", utils.PasswordComplexity)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Bind request body to the the User Model
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -29,6 +39,17 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 		user.Role = "User"
 	}
 
+	if err := validate.Struct(user); err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			if err.Tag() == "password_complexity" {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character."})
+				return
+			}
+		}
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Check if email exist
 	exist := uc.service.CheckIfEmailExist(user.Email)
 	if exist {
@@ -37,7 +58,7 @@ func (uc *UserController) CreateUser(c *gin.Context) {
 	}
 
 	// Create user
-	err := uc.service.CreateUser(&user)
+	err = uc.service.CreateUser(&user)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create user", "desc": err.Error()})
 		return

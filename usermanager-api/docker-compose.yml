@@ -1,21 +1,24 @@
 services:
-  usermanager_api:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: usermanagerapi
     ports:
       - "${PORT}:${PORT}"
     volumes:
-      - .:/app
+      - ./:/app
       - mongo_data:/data/db
     environment:
       - MONGO_URI=${MONGO_URI}
       - PORT=${PORT}
       - JWT_SECRET=${JWT_SECRET}
+      - DEFP=${DEFP}
+      - DEFE=${DEFE}
     network_mode: "host"
     depends_on:
       - mongodb_service
     command: air
-
   mongodb_service:
     container_name: mongodb_service
     image: mongo:latest

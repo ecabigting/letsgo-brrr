@@ -53,7 +53,11 @@ func (s *UserService) VerifyUser(userID string, token string) error {
 	}
 	user.VerifiedDate = time.Now()
 	user.VerificationToken = ""
+	user.VerifiedDate = time.Now()
+	user.VerifiedBy = objectId
+	user.UpdatedByID = objectId
 	user.IsEnabled = true
+	user.IsEnabledByID = objectId
 
 	_, err = s.collection.UpdateOne(context.Background(), bson.M{"_id": objectId}, bson.M{"$set": user})
 	return err

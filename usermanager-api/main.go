@@ -29,21 +29,26 @@ func main() {
 		utils.Logger.Fatal("Failed to connect to MongoDB:", err)
 		os.Exit(1)
 	}
-	fmt.Println("DB Connection no error")
+	fmt.Println("Connected to DB..")
 	defer func() {
 		if err = client.Disconnect(context.Background()); err != nil {
 			utils.Logger.Fatal("Failed to disconnect from MongoDB:", err)
 		}
 	}()
 
+	// Seed Database
+	fmt.Println("Checking if we need to Seed the Database...")
+	config.SeedDB(client.Database(config.AppConfig.Database))
+
 	// setup gin router
 	router := gin.Default()
 
 	// setup routes
-	routes.SetupRoutes(router, client.Database("usermanager-api"))
+	routes.SetupRoutes(router, client.Database(config.AppConfig.Database))
 
 	// start server
 	if err := router.Run(":" + config.AppConfig.Port); err != nil {
 		utils.Logger.Fatal("Fatal error starting the server:", err)
+		os.Exit(1)
 	}
 }
