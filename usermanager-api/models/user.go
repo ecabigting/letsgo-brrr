@@ -29,7 +29,7 @@ type User struct {
 }
 
 type Login struct {
-	Email    string `bson:"email" json:"email" binding:"required,email"`
+	Email    string `bson:"email" json:"email" validate:"required,email"`
 	Password string `bson:"password" json:"password" validate:"required"`
 	UserDevice
 }
@@ -37,10 +37,10 @@ type Login struct {
 type UserDevice struct {
 	DeviceID    primitive.ObjectID `bson:"_id"`
 	UserID      primitive.ObjectID `bson:"userID"`
-	DeviceOS    string             `bson:"dos,omitempty" json:"dos"`
-	UserAgent   string             `bsong:"ua,omitempty" json:"ua"`
-	DeviceGenID string             `bson:"did,omitempty" json:"did"`
-	Browser     string             `bson:"brwsr,omitempty" json:"brwsr"`
-	DeviceIP    string             `bson:"dip,omitempty" json:"dip"`
+	DeviceOS    string             `bson:"dos,omitempty" json:"dos" validate:"required" binding:"required"`
+	UserAgent   string             `bsong:"ua,omitempty" json:"ua" validate:"required" binding:"required"`
+	DeviceGenID string             `bson:"dgid,omitempty" json:"dgid" validate:"required" binding:"required"`
+	Browser     string             `bson:"navigator,omitempty" json:"navigator" validate:"required" binding:"required"`
+	DeviceIP    string             `bson:"dip,omitempty" json:"dip" validate:"required" binding:"required"`
 	CreatedDate time.Time          `bson:"createdDate"`
 }

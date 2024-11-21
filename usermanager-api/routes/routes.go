@@ -15,7 +15,7 @@ func SetupRoutes(router *gin.Engine, db *mongo.Database) {
 	// public routes
 	router.POST("/user", userController.CreateUser)
 	router.PATCH("/user/verify/:userId", userController.VerifyUser)
-
+	router.POST("/user/login", userController.Login)
 	// protected routes
 	protected := router.Group("/user").Use(middlewares.AuthMiddleware())
 	{

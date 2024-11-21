@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/ecabigting/letsgo-brrr/usermanager-api/models"
@@ -19,6 +20,24 @@ func NewUserController(service *services.UserService) *UserController {
 }
 
 func (uc *UserController) Login(c *gin.Context) {
+	var login models.Login
+
+	// Validate the login payload
+
+	// 	fmt.Println(err)
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 	return
+	//
+	// }
+
+	// Bind request body to the the User Model
+	if err := c.ShouldBindJSON(&login); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": login})
 }
 
 func (uc *UserController) CreateUser(c *gin.Context) {
